@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>warkop sultan - final boss edition</title>
+
+  <style>
+    /* =========================
+       base + reset
+    ========================== */
+    * {
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+
+      display: flex;
+      justify-content: center;
+
+      font-family: "Segoe UI", Roboto, sans-serif;
+      color: #e0e0e0;
+
+      background: radial-gradient(circle at center, #1a0505 0%, #050505 100%);
+    }
+
+    /* =========================
+       toast notif
+    ========================== */
+    #toast {
+      position: fixed;
+      bottom: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+
+      background: crimson;
+      color: white;
+      padding: 15px 30px;
+      border-radius: 50px;
+
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 2px;
+
+      box-shadow: 0 10px 30px rgba(220, 20, 60, 0.5);
+      transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      z-index: 9999;
+      user-select: none;
+    }
+
+    #toast.muncul {
+      bottom: 30px;
+    }
+
+    /* =========================
+       flash checkout effect
+    ========================== */
+    @keyframes flash-glow {
+      0% {
+        box-shadow: 0 0 15px rgba(220, 20, 60, 0.2);
+        border-color: transparent;
+      }
+      50% {
+        box-shadow: 0 0 50px aqua;
+        border-color: aqua;
+        transform: scale(1.02);
+      }
+      100% {
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+        transform: scale(1);
+      }
+    }
+
+    .flash-effect {
+      animation: flash-glow 0.4s ease-out;
+      z-index: 1000;
+    }
+
+    /* =========================
+       main card
+    ========================== */
+    .card {
+      width: 100%;
+      max-width: 420px;
+      padding: 25px;
+
+      background: rgba(21, 21, 21, 0.9);
+      backdrop-filter: blur(10px);
+
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-top: 5px solid crimson;
+
+      box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.9),
+        0 0 15px rgba(220, 20, 60, 0.2);
+    }
+
+    /* =========================
+       sticky header
+    ========================== */
+    .header-sticky {
+      position: sticky;
+      top: -25px;
+      z-index: 100;
+
+      background: rgba(21, 21, 21, 0.95);
+      padding: 15px 0;
+
+      border-bottom: 1px solid #333;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+
+      letter-spacing: 3px;
+      text-shadow: 0 0 15px crimson;
+
+      text-transform: uppercase;
+      font-size: 1.4rem;
+      color: #fff;
+
+      user-select: none;
+      cursor: pointer;
+    }
+
+    h1:active {
+      transform: scale(0.95);
+    }
+
+    .wa-style {
+      font-weight: 900;
+      font-style: italic;
+      color: crimson;
+      text-decoration: underline;
+    }
+
+    /* =========================
+       admin panel
+    ========================== */
+    #admin-panel {
+      display: none;
+
+      background: #000;
+      border: 1px solid aqua;
+      padding: 15px;
+      margin-bottom: 20px;
+
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .admin-btn {
+      background: #111;
+      border: 1px solid #444;
+      color: #fff;
+
+      padding: 10px;
+      font-size: 10px;
+      border-radius: 6px;
+
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .admin-btn:hover {
+      border-color: aqua;
+    }
+
+    .admin-btn.off {
+      border-color: crimson;
+      color: crimson;
+      opacity: 0.6;
+    }
+
+    /* =========================
+       menu scroll
+    ========================== */
+    .menu-scroll {
+      max-height: 450px;
+      overflow-y: auto;
+      padding-right: 5px;
+      margin-bottom: 20px;
+      scroll-behavior: smooth;
+    }
+
+    .menu-scroll::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .menu-scroll::-webkit-scrollbar-thumb {
+      background: crimson;
+    }
+
+    /* =========================
+       product accordion
+    ========================== */
+    .produk-wrapper {
+      background: rgba(255, 255, 255, 0.03);
+      margin-bottom: 15px;
+
+      border-radius: 8px;
+      border-left: 4px solid #333;
+
+      overflow: hidden;
+    }
+
+    .produk-wrapper:hover {
+      border-left-color: crimson;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .produk-header {
+      padding: 18px;
+      cursor: pointer;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      font-weight: bold;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .arrow {
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      color: #555;
+    }
+
+    .arrow.rotate {
+      transform: rotate(90deg);
+      color: crimson;
+    }
+
+    .produk-detail {
+      max-height: 0;
+      padding: 0 15px;
+
+      background: rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+
+      transition: all 0.3s ease-in-out;
+    }
+
+    .produk-detail.show {
+      max-height: 300px;
+      padding: 20px 15px;
+      border-top: 1px solid #222;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+
+      font-size: 10px;
+      color: #666;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+
+      background: #000;
+      color: aqua;
+
+      border: 1px solid #333;
+      border-radius: 6px;
+
+      font-size: 12px;
+      outline: none;
+    }
+
+    select:focus {
+      border-color: aqua;
+    }
+
+    /* =========================
+       buttons
+    ========================== */
+    .btn-add {
+      width: 100%;
+      padding: 12px;
+
+      border: none;
+      border-radius: 6px;
+
+      background: crimson;
+      color: white;
+
+      cursor: pointer;
+
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 11px;
+
+      box-shadow: 0 4px 0 #800000;
+    }
+
+    .btn-add:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #800000;
+    }
+
+    .btn-add:disabled {
+      background: #222;
+      color: #444;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* =========================
+       cart area
+    ========================== */
+    .cart {
+      background: #080808;
+      padding: 15px;
+
+      border: 1px dashed #333;
+      border-radius: 8px;
+
+      font-family: "Courier New", monospace;
+    }
+
+    .item-list {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      padding: 10px 0;
+      border-bottom: 1px solid #1a1a1a;
+
+      font-size: 12px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .btn-kurang {
+      background: #200;
+      border: 1px solid crimson;
+      color: crimson;
+
+      padding: 2px 8px;
+      cursor: pointer;
+
+      border-radius: 6px;
+      margin-left: 10px;
+    }
+
+    .btn-kurang:hover {
+      background: crimson;
+      color: white;
+    }
+
+    .btn-cekout {
+      width: 100%;
+      margin-top: 20px;
+      padding: 18px;
+
+      border: none;
+      border-radius: 10px;
+
+      background: aqua;
+      color: #000;
+
+      cursor: pointer;
+
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    }
+
+    .btn-cekout:hover {
+      background: #00e5e5;
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="toast">🚀 pesanan meluncur!</div>
+
+  <div class="card">
+    <div class="header-sticky">
+      <h1 id="dev-trigger">Project <span class="wa-style">Gabut</span> Ver-X</h5>
+    </div>
+
+    <div id="admin-panel">
+      <strong style="color: aqua; font-size: 11px;">🛠 manager stok</strong>
+      <div class="admin-grid" id="admin-grid"></div>
+    </div>
+
+    <div class="menu-scroll" id="menu-container"></div>
+
+    <div class="cart">
+      <strong style="color: crimson; font-size: 10px;">[data_order]</strong>
+      <div id="list" style="margin: 10px 0; color: #888;">no_order_detected...</div>
+
+      <div style="border-top: 1px solid #333; padding-top: 10px; display: flex; justify-content: space-between;">
+        <span>total:</span>
+        <span style="color: aqua; font-weight: bold;">rp <span id="total">0</span></span>
+      </div>
+    </div>
+
+    <button class="btn-cekout" id="btn-checkout">checkout sekarang🚀</button>
+  </div>
+
+  <script>
+    /* =========================
+       config (gampang ganti)
+    ========================== */
+    const CONFIG = {
+      nomorWA: "620000000000",
+      klikAdmin: 12,
+      delayCheckoutMs: 3000,
+      motivasi: "tetaplah ngoding walau hp panas, karena masa depan lu gak bisa di-copas."
+    };
+
+    /* =========================
+       data menu (master)
+    ========================== */
+    const masterMenu = [
+      { id: "kopi", name: "☕ kopi", items: [["Espresso", 5000], ["Cappucino", 7000], ["Hitam", 3000]], sizes: [["S", 0], ["M", 2000], ["L", 3000]] },
+      { id: "susu", name: "🥛 susu", items: [["Putih", 5000], ["Coklat", 6000], ["Jahe", 7000]], sizes: [["S", 0], ["M", 2000], ["L", 3000]] },
+      { id: "matcha", name: "🍵 matcha", items: [["Pure", 8000], ["Latte", 10000]], sizes: [["S", 0], ["M", 2000], ["L", 3000]] },
+      { id: "teh", name: "🥤 teh", items: [["Manis", 3000], ["Tawar", 2000], ["Lemon", 5000]], sizes: [["S", 0], ["M", 2000], ["L", 3000]] },
+      { id: "indomie", name: "🍜 indomie", items: [["Goreng", 5000], ["Kuah", 5000]], sizes: [["Polos", 0], ["Sosis", 3000], ["Telur", 3000], ["Komplit", 5000]] },
+      { id: "nasgor", name: "🥘 nasgor", items: [["Ori", 15000], ["Pedas", 15000], ["Gila", 17000]], sizes: [["Standard", 0], ["Telor", 3000], ["Sosis", 3000]] },
+      { id: "roti-s", name: "🍞 roti single", items: [["Coklat", 10000], ["Keju", 12000], ["Mozarella", 15000], ["Kacang", 10000], ["Susu", 8000]], sizes: null },
+      { id: "roti-m", name: "🍞 roti mix", items: [["Coklat Keju", 15000], ["Coklat Moza", 17000], ["Coklat Kacang", 14000], ["Keju Moza", 18000], ["Keju Susu", 14000], ["Moza Susu", 16000]], sizes: null }
+    ];
+
+    /* =========================
+       state
+    ========================== */
+    let tas = [];
+    let clickCount = 0;
+
+    let disabledItems = JSON.parse(localStorage.getItem("warkop_disabled")) || [];
+
+    /* =========================
+       helper: dom
+    ========================== */
+    const $ = (id) => document.getElementById(id);
+
+    /* =========================
+       helper: audio (beep)
+    ========================== */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (audioCtx.state === "suspended") audioCtx.resume();
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.frequency.setValueAtTime(type === "click" ? 800 : 1200, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    /* =========================
+       render menu + admin
+    ========================== */
+    function renderAll() {
+      let menuHtml = "";
+      let adminHtml = "";
+
+      masterMenu.forEach((m) => {
+        const isOff = disabledItems.includes(m.id);
+
+        menuHtml += `
+          <div class="produk-wrapper">
+            <div class="produk-header" data-open="${m.id}">
+              <span>
+                ${m.name}
+                ${isOff ? '<small style="color:crimson">(sold out!)</small>' : ""}
+              </span>
+              <span class="arrow">▶</span>
+            </div>
+
+            <div id="${m.id}" class="produk-detail">
+              <label>varian:</label>
+              <select id="v-${m.id}" ${isOff ? "disabled" : ""}>
+                ${m.items.map(i => `<option value="${i[0]}|${i[1]}">${i[0]} - ${i[1] / 1000}k</option>`).join("")}
+              </select>
+
+              ${m.sizes ? `
+                <label>opsi/size:</label>
+                <select id="s-${m.id}" ${isOff ? "disabled" : ""}>
+                  ${m.sizes.map(z => `<option value="${z[0]}|${z[1]}">${z[0]} (+${z[1] / 1000}k)</option>`).join("")}
+                </select>
+              ` : ""}
+
+              <button class="btn-add" data-add="${m.id}" ${isOff ? "disabled" : ""}>
+                ${isOff ? "stok habis" : "add order"}
+              </button>
+            </div>
+          </div>
+        `;
+
+        adminHtml += `
+          <div class="admin-btn ${isOff ? "off" : ""}" data-stock="${m.id}">
+            ${m.name} <span>${isOff ? "❌" : "✅"}</span>
+          </div>
+        `;
+      });
+
+      $("menu-container").innerHTML = menuHtml;
+      $("admin-grid").innerHTML = adminHtml;
+
+      bindMenuEvents();
+      bindAdminEvents();
+    }
+
+    /* =========================
+       events: menu accordion + add
+    ========================== */
+    function bindMenuEvents() {
+      document.querySelectorAll("[data-open]").forEach((header) => {
+        header.onclick = () => toggleMenu(header.getAttribute("data-open"), header);
+      });
+
+      document.querySelectorAll("[data-add]").forEach((btn) => {
+        btn.onclick = () => {
+          const id = btn.getAttribute("data-add");
+          const kat = masterMenu.find((x) => x.id === id).name;
+          tambahItem(id, kat);
+        };
+      });
+    }
+
+    function toggleMenu(id, headerEl) {
+      playSound("click");
+
+      const target = $(id);
+      const isOpen = target.classList.contains("show");
+
+      document.querySelectorAll(".produk-detail").forEach((d) => d.classList.remove("show"));
+      document.querySelectorAll(".arrow").forEach((a) => a.classList.remove("rotate"));
+
+      if (!isOpen) {
+        target.classList.add("show");
+        headerEl.querySelector(".arrow").classList.add("rotate");
+      }
+    }
+
+    /* =========================
+       events: admin panel
+    ========================== */
+    function bindAdminEvents() {
+      document.querySelectorAll("[data-stock]").forEach((btn) => {
+        btn.onclick = () => toggleStock(btn.getAttribute("data-stock"));
+      });
+    }
+
+    function toggleStock(id) {
+      if (disabledItems.includes(id)) {
+        disabledItems = disabledItems.filter((x) => x !== id);
+      } else {
+        disabledItems.push(id);
+      }
+
+      localStorage.setItem("warkop_disabled", JSON.stringify(disabledItems));
+      renderAll();
+    }
+
+    /* =========================
+       cart logic
+    ========================== */
+    function tambahItem(id, kategoriNama) {
+      playSound("click");
+
+      const v = $("v-" + id).value.split("|");
+      const sizeEl = $("s-" + id);
+      const s = sizeEl ? sizeEl.value.split("|") : ["", 0];
+
+      const varian = v[0];
+      const hargaVarian = parseInt(v[1], 10);
+      const sizeNama = s[0];
+      const hargaSize = parseInt(s[1], 10);
+
+      const labelSize = sizeNama && !["Polos", "Standard", "S"].includes(sizeNama)
+        ? ` (${sizeNama})`
+        : "";
+
+      const nama = `${kategoriNama} ${varian}${labelSize}`;
+      const harga = hargaVarian + hargaSize;
+
+      const existing = tas.find((i) => i.nama === nama);
+
+      if (existing) existing.qty++;
+      else tas.push({ nama, harga, qty: 1 });
+
+      renderCart();
+    }
+
+    function kurang(nama) {
+      const idx = tas.findIndex((i) => i.nama === nama);
+      if (idx === -1) return;
+
+      tas[idx].qty--;
+      if (tas[idx].qty <= 0) tas.splice(idx, 1);
+
+      renderCart();
+    }
+
+    function renderCart() {
+      let total = 0;
+      let html = "";
+
+      tas.forEach((i) => {
+        const sub = i.harga * i.qty;
+        total += sub;
+
+        html += `
+          <div class="item-list">
+            <span>${i.nama} x${i.qty}</span>
+            <div>
+              <span>${sub.toLocaleString("id-ID")}</span>
+              <button class="btn-kurang" data-minus="${i.nama}">-</button>
+            </div>
+          </div>
+        `;
+      });
+
+      $("list").innerHTML = tas.length ? html : "no_order_detected...";
+      $("total").innerText = total.toLocaleString("id-ID");
+
+      document.querySelectorAll("[data-minus]").forEach((btn) => {
+        btn.onclick = () => kurang(btn.getAttribute("data-minus"));
+      });
+    }
+
+    /* =========================
+       whatsapp checkout
+    ========================== */
+    function buildPesanWA(totalText) {
+      let pesan = `*pesanan sultan baru!*\n------------------\n`;
+
+      tas.forEach((i) => {
+        pesan += `- ${i.nama} (x${i.qty})\n`;
+      });
+
+      pesan += `------------------\n*total: rp ${totalText}*\n\n`;
+      pesan += `*motivasi hari ini:*\n_'${CONFIG.motivasi}_'`;
+
+      return pesan;
+    }
+
+    function checkout() {
+      if (!tas.length) return alert("keranjangnya masi kosong etdah!");
+
+      const card = document.querySelector(".card");
+      const toast = $("toast");
+      const btn = $("btn-checkout");
+
+      const totalText = $("total").innerText;
+      const pesan = buildPesanWA(totalText);
+
+      // visual
+      btn.disabled = true;
+      btn.style.opacity = "0.5";
+      btn.innerText = "redirecting...";
+      card.classList.add("flash-effect");
+      toast.classList.add("muncul");
+      playSound("cash");
+
+      setTimeout(() => {
+        const url = `https://wa.me/${CONFIG.nomorWA}?text=${encodeURIComponent(pesan)}`;
+        window.open(url, "_blank");
+
+        // reset
+        card.classList.remove("flash-effect");
+        toast.classList.remove("muncul");
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.innerText = "checkout sekarang🚀";
+
+        tas = [];
+        renderCart();
+      }, CONFIG.delayCheckoutMs);
+    }
+
+    /* =========================
+       dev trigger (12 klik)
+    ========================== */
+    $("dev-trigger").onclick = () => {
+      clickCount++;
+      if (clickCount === CONFIG.klikAdmin) {
+        const panel = $("admin-panel");
+        panel.style.display = panel.style.display === "block" ? "none" : "block";
+        clickCount = 0;
+        playSound("cash");
+      }
+    };
+
+    $("btn-checkout").onclick = checkout;
+
+    /* =========================
+       init
+    ========================== */
+    renderAll();
+  </script>
+</body>
+</html>
